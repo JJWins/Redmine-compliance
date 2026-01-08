@@ -64,18 +64,6 @@ import { ChangePasswordModalComponent } from '../shared/change-password-modal/ch
             <span *ngIf="isLoading">Signing in...</span>
           </button>
         </form>
-
-        <div class="login-footer">
-          <div class="demo-credentials">
-            <p class="demo-title">Demo Credentials:</p>
-            <div class="credential-item">
-              <strong>Admin:</strong> admin&#64;polussolutions.com / admin123
-            </div>
-            <div class="credential-item">
-              <strong>Manager:</strong> manager&#64;polussolutions.com / manager123
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Change Password Modal -->
@@ -207,38 +195,6 @@ import { ChangePasswordModalComponent } from '../shared/change-password-modal/ch
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
-    }
-
-    .login-footer {
-      border-top: 1px solid var(--border);
-      padding-top: 1.5rem;
-    }
-
-    .demo-credentials {
-      text-align: center;
-    }
-
-    .demo-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .credential-item {
-      font-size: 0.875rem;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-      padding: 0.75rem;
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-    }
-
-    .credential-item strong {
-      color: var(--primary);
     }
   `]
 })
