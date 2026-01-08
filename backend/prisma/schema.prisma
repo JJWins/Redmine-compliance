@@ -1,0 +1,275 @@
+// Prisma Schema for Redmine Compliance Dashboard
+// Database: MySQL
+// Connection string format: mysql://user:password@host:port/database
+// See .env file for DATABASE_URL configuration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Schema based on DATABASE_SCHEMA.md
+// Ready for MySQL 5.7+ (supports JSON type)
+
+enum UserRole {
+  user
+  manager
+  admin
+}
+
+enum ProjectStatus {
+  active
+  archived
+  closed
+}
+
+enum ViolationType {
+  missing_entry
+  bulk_logging
+  late_entry
+  round_numbers
+  stale_task
+  overrun_task
+  partial_entry
+}
+
+enum ViolationSeverity {
+  low
+  medium
+  high
+}
+
+enum ViolationStatus {
+  open
+  resolved
+  ignored
+}
+
+enum SyncType {
+  full
+  incremental
+}
+
+enum SyncStatus {
+  success
+  failed
+  partial
+}
+
+model User {
+  id              String    @id @default(uuid())
+  redmineUserId   Int       @unique @map("redmine_user_id")
+  name            String
+  email           String    @unique
+  password        String?   // Password hash for authentication
+  managerId       String?   @map("manager_id")
+  role            UserRole  @default(user)
+  status          Int?      @default(1) // Redmine user status: 1 = Active, 2 = Registered, 3 = Locked (nullable for existing records)
+  mustChangePassword Boolean @default(false) @map("must_change_password") // Flag to indicate if user must change password on next login
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  lastSyncedAt    DateTime? @map("last_synced_at")
+
+  // Relations
+  manager         User?     @relation("ManagerTeam", fields: [managerId], references: [id])
+  teamMembers     User[]    @relation("ManagerTeam")
+  managedProjects Project[]
+  timeEntries     TimeEntry[]
+  assignedIssues  Issue[]   @relation("AssignedIssues")
+  violations      ComplianceViolation[]
+  scorecards      ManagerScorecard[]
+  projectMemberships ProjectMember[]
+
+  @@index([redmineUserId])
+  @@index([email])
+  @@index([managerId])
+  @@map("users")
+}
+
+model Project {
+  id              String        @id @default(uuid())
+  redmineProjectId Int          @unique @map("redmine_project_id")
+  name            String
+  parentId        String?       @map("parent_id")
+  managerId       String?       @map("manager_id")
+  status          ProjectStatus @default(active)
+  estimatedHours  Decimal?      @map("estimated_hours") @db.Decimal(10, 2)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  lastSyncedAt    DateTime?     @map("last_synced_at")
+
+  // Relations
+  parent          Project?      @relation("ProjectHierarchy", fields: [parentId], references: [id])
+  children        Project[]      @relation("ProjectHierarchy")
+  manager         User?         @relation(fields: [managerId], references: [id])
+  timeEntries     TimeEntry[]
+  issues          Issue[]
+  members         ProjectMember[]
+
+  @@index([redmineProjectId])
+  @@index([parentId])
+  @@index([managerId])
+  @@index([status])
+  @@map("projects")
+}
+
+model Issue {
+  id              String    @id @default(uuid())
+  redmineIssueId  Int       @unique @map("redmine_issue_id")
+  projectId       String    @map("project_id")
+  assignedToId    String?   @map("assigned_to_id")
+  subject         String
+  estimatedHours  Decimal?  @map("estimated_hours") @db.Decimal(10, 2)
+  dueDate         DateTime? @map("due_date") @db.Date
+  status          String
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  lastSyncedAt    DateTime? @map("last_synced_at")
+
+  // Relations
+  project         Project   @relation(fields: [projectId], references: [id])
+  assignedTo      User?     @relation("AssignedIssues", fields: [assignedToId], references: [id])
+  timeEntries     TimeEntry[]
+
+  @@index([redmineIssueId])
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([status])
+  @@map("issues")
+}
+
+model TimeEntry {
+  id                String    @id @default(uuid())
+  redmineTimeEntryId Int      @unique @map("redmine_time_entry_id")
+  userId            String    @map("user_id")
+  projectId         String    @map("project_id")
+  issueId           String?   @map("issue_id")
+  hours             Decimal   @db.Decimal(10, 2)
+  spentOn          DateTime  @map("spent_on") @db.Date
+  createdOn        DateTime  @map("created_on")
+  comments         String?   @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user              User      @relation(fields: [userId], references: [id])
+  project           Project   @relation(fields: [projectId], references: [id])
+  issue             Issue?    @relation(fields: [issueId], references: [id])
+
+  @@index([redmineTimeEntryId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([issueId])
+  @@index([spentOn])
+  @@index([createdOn])
+  @@map("time_entries")
+}
+
+model ComplianceViolation {
+  id            String           @id @default(uuid())
+  userId        String           @map("user_id")
+  violationType ViolationType    @map("violation_type")
+  date          DateTime         @db.Date
+  severity      ViolationSeverity @default(medium)
+  status        ViolationStatus  @default(open)
+  metadata      Json?            // MySQL JSON type
+  createdAt     DateTime         @default(now()) @map("created_at")
+  resolvedAt    DateTime?        @map("resolved_at")
+
+  // Relations
+  user          User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([date])
+  @@index([violationType])
+  @@index([status])
+  @@map("compliance_violations")
+}
+
+model ManagerScorecard {
+  id              String   @id @default(uuid())
+  managerId       String   @map("manager_id")
+  period          DateTime @db.Date
+  complianceRate  Decimal  @map("compliance_rate") @db.Decimal(5, 2)
+  healthScore     Decimal  @map("health_score") @db.Decimal(5, 2)
+  teamSize        Int      @map("team_size")
+  violationsCount Int      @default(0) @map("violations_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  manager         User     @relation(fields: [managerId], references: [id])
+
+  @@index([managerId])
+  @@index([period])
+  @@map("manager_scorecards")
+}
+
+model SystemConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json     // MySQL JSON type
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+
+  @@map("system_config")
+}
+
+model SyncLog {
+  id            String     @id @default(uuid())
+  syncType      SyncType   @map("sync_type")
+  entityType    String     @map("entity_type")
+  recordsSynced Int        @map("records_synced")
+  status        SyncStatus
+  errorMessage  String?    @map("error_message") @db.Text
+  startedAt     DateTime   @default(now()) @map("started_at")
+  completedAt   DateTime?  @map("completed_at")
+
+  @@index([syncType])
+  @@index([entityType])
+  @@index([status])
+  @@index([startedAt])
+  @@map("sync_logs")
+}
+
+model SyncState {
+  id            String   @id @default(uuid())
+  entityType    String   @unique @map("entity_type") // 'users', 'projects', 'issues', 'time_entries'
+  lastSyncAt    DateTime @map("last_sync_at") // Last successful sync timestamp
+  lastFullSyncAt DateTime? @map("last_full_sync_at") // Last full sync timestamp
+  lastRecordId  Int?     @map("last_record_id") // Last synced Redmine ID (for reference)
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([entityType])
+  @@map("sync_state")
+}
+
+model ProjectMember {
+  id                String    @id @default(uuid())
+  redmineMembershipId Int     @unique @map("redmine_membership_id") // Redmine membership ID
+  projectId         String    @map("project_id")
+  userId            String?   @map("user_id") // Nullable for group memberships
+  redmineUserId     Int?      @map("redmine_user_id") // Redmine user ID (for reference, even if user not synced)
+  redmineGroupId    Int?      @map("redmine_group_id") // Redmine group ID (if group membership)
+  roles             Json      // Array of role objects: [{ id: number, name: string, inherited?: boolean }]
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  lastSyncedAt      DateTime? @map("last_synced_at")
+
+  // Relations
+  project           Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user              User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, redmineMembershipId]) // Ensure one membership per project per Redmine membership ID
+  @@index([projectId])
+  @@index([userId])
+  @@index([redmineMembershipId])
+  @@index([redmineUserId])
+  @@index([redmineGroupId])
+  @@map("project_members")
+}
+

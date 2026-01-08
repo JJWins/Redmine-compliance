@@ -1,0 +1,28 @@
+# Copy this content to create your .env file in the backend directory
+# File location: backend/.env
+
+# Database Connection
+DATABASE_URL=mysql://redmine_user:YourStrongPassword123!@localhost:3306/redmine_dashboard
+
+# Individual Environment Variables (alternative format)
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=redmine_user
+DB_PASSWORD=YourStrongPassword123!
+DB_NAME=redmine_dashboard
+
+# Redmine API
+REDMINE_URL=https://redmine.polussolutions.com
+REDMINE_API_KEY=dummy1234dert45667
+
+# Server
+PORT=3000
+NODE_ENV=development
+
+# Job Scheduler
+SYNC_INTERVAL_HOURS=1
+DAILY_DIGEST_TIME=09:00
+
+# CORS
+FRONTEND_URL=http://localhost:4200
+
