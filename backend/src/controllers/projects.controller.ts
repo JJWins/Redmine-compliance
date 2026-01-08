@@ -29,7 +29,7 @@ const buildAccessFilter = (req: AuthRequest, baseWhere: any = {}) => {
 };
 
 // Helper function to map frontend column keys to Prisma orderBy
-const getProjectOrderBy = (sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc') => {
+const getProjectOrderBy = (sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc'): any => {
   if (!sortBy) return { name: 'asc' };
   
   switch (sortBy) {
@@ -44,7 +44,6 @@ const getProjectOrderBy = (sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc') =
     case '_count.issues':
     case '_count.timeEntries':
     case 'issuesWithoutEstimates':
-      // These are calculated fields - will sort after fetching
       return { name: sortOrder };
     default:
       return { name: 'asc' };
@@ -188,7 +187,7 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
 
       // Add issues without estimates count
       projects = projects.map(project => {
-        const issuesWithoutEstimates = project.issues.filter(issue => 
+        const issuesWithoutEstimates = project.issues.filter((issue: any) => 
           issue.estimatedHours === null || parseFloat(issue.estimatedHours.toString()) === 0
         ).length;
         

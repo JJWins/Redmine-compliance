@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response.utils';
 import prisma from '../config/database';
 import configService from '../services/config.service';
@@ -48,7 +48,7 @@ const buildIssueAccessFilter = async (req: AuthRequest, baseWhere: any = {}) => 
 };
 
 // Helper function to map frontend column keys to Prisma orderBy
-const getIssueOrderBy = (sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc') => {
+const getIssueOrderBy = (sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc'): any => {
   if (!sortBy) return { redmineIssueId: 'desc' };
   
   switch (sortBy) {
@@ -68,7 +68,6 @@ const getIssueOrderBy = (sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc') => 
       return { assignedTo: { name: sortOrder } };
     case 'totalSpentHours':
     case 'overrun':
-      // These are calculated fields - will sort after fetching
       return { redmineIssueId: sortOrder };
     default:
       return { redmineIssueId: 'desc' };
@@ -358,7 +357,7 @@ export const getIssues = async (req: AuthRequest, res: Response) => {
       // Calculate spent hours for each issue
       issues = issues.map(issue => {
         const totalSpent = issue.timeEntries.reduce(
-          (sum, te) => sum + parseFloat(te.hours.toString()),
+          (sum: number, te: any) => sum + parseFloat(te.hours.toString()),
           0
         );
         const estimated = issue.estimatedHours ? parseFloat(issue.estimatedHours.toString()) : 0;

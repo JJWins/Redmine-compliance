@@ -3,7 +3,7 @@ import { sendSuccess, sendError } from '../utils/response.utils';
 import configService from '../services/config.service';
 import cronService from '../services/cron.service';
 
-export const getConfig = async (req: Request, res: Response) => {
+export const getConfig = async (_req: Request, res: Response) => {
   try {
     const allConfig = await configService.getAllConfig();
     return sendSuccess(res, allConfig);
@@ -13,7 +13,7 @@ export const getConfig = async (req: Request, res: Response) => {
   }
 };
 
-export const getComplianceRules = async (req: Request, res: Response) => {
+export const getComplianceRules = async (_req: Request, res: Response) => {
   try {
     const rules = await configService.getComplianceRules();
     return sendSuccess(res, rules);
@@ -96,7 +96,7 @@ export const updateComplianceRules = async (req: Request, res: Response) => {
   }
 };
 
-export const getCronStatus = async (req: Request, res: Response) => {
+export const getCronStatus = async (_req: Request, res: Response) => {
   try {
     const status = cronService.getStatus();
     return sendSuccess(res, status);

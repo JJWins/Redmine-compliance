@@ -6,7 +6,7 @@ import configService from '../services/config.service';
 import logger from '../utils/logger';
 import { AuthRequest } from '../middleware/auth.middleware';
 
-export const getOverview = async (req: Request, res: Response) => {
+export const getOverview = async (_req: Request, res: Response) => {
   try {
     // Get total users - only count users with status 1 (Active)
     const totalUsers = await prisma.user.count({
@@ -1153,7 +1153,7 @@ export const diagnoseOverruns = async (_req: Request, res: Response) => {
   }
 };
 
-export const runComplianceCheck = async (req: Request, res: Response) => {
+export const runComplianceCheck = async (_req: Request, res: Response) => {
   try {
     // Run checks in background
     complianceService.runComplianceChecks().then(result => {

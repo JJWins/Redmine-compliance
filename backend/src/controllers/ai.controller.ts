@@ -8,7 +8,7 @@ import prisma from '../config/database';
 /**
  * Check AI service status
  */
-export const getStatus = async (req: Request, res: Response) => {
+export const getStatus = async (_req: Request, res: Response) => {
   try {
     const settings = await configService.getAISettings();
     const isAvailable = await aiService.isAvailable();
@@ -28,7 +28,7 @@ export const getStatus = async (req: Request, res: Response) => {
 /**
  * Get AI settings
  */
-export const getAISettings = async (req: Request, res: Response) => {
+export const getAISettings = async (_req: Request, res: Response) => {
   try {
     const settings = await configService.getAISettings();
     // Don't expose full API key, just show if it exists
@@ -68,7 +68,7 @@ export const updateAISettings = async (req: Request, res: Response) => {
 /**
  * Get AI-generated insights
  */
-export const getInsights = async (req: Request, res: Response) => {
+export const getInsights = async (_req: Request, res: Response) => {
   try {
     if (!(await aiService.isAvailable())) {
       return sendError(res, 'AI service is not available. Please configure Claude API key.', 503);
@@ -110,7 +110,7 @@ export const generateReport = async (req: Request, res: Response) => {
 /**
  * Detect anomalies
  */
-export const detectAnomalies = async (req: Request, res: Response) => {
+export const detectAnomalies = async (_req: Request, res: Response) => {
   try {
     if (!(await aiService.isAvailable())) {
       return sendError(res, 'AI service is not available. Please configure Claude API key.', 503);
@@ -206,7 +206,7 @@ export const detectAnomalies = async (req: Request, res: Response) => {
 /**
  * Assess risk levels
  */
-export const assessRisk = async (req: Request, res: Response) => {
+export const assessRisk = async (_req: Request, res: Response) => {
   try {
     if (!(await aiService.isAvailable())) {
       return sendError(res, 'AI service is not available. Please configure Claude API key.', 503);

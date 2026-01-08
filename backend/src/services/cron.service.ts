@@ -55,10 +55,10 @@ class CronService {
       console.log(`  Issues: ${syncResult.issues.synced} synced, ${syncResult.issues.errors} errors`);
       console.log(`  Time Entries: ${syncResult.timeEntries.synced} synced, ${syncResult.timeEntries.errors} errors`);
 
-      const totalSynced = syncResult.users.synced + 
-                         syncResult.projects.synced + 
-                         syncResult.issues.synced + 
-                         syncResult.timeEntries.synced;
+      // const totalSynced = syncResult.users.synced + 
+      //                    syncResult.projects.synced + 
+      //                    syncResult.issues.synced + 
+      //                    syncResult.timeEntries.synced;
       const totalErrors = syncResult.users.errors + 
                           syncResult.projects.errors + 
                           syncResult.issues.errors + 

@@ -131,9 +131,10 @@ export const getTeamCompliance = async (req: Request, res: Response) => {
     
     for (const project of manager.managedProjects) {
       for (const issue of project.issues) {
-        if (issue.estimatedHours && issue.estimatedHours > 0) {
-          const totalSpent = issue.timeEntries.reduce((sum, te) => sum + te.hours, 0);
-          if (totalSpent > issue.estimatedHours * overrunThreshold) {
+        const estimatedHours = issue.estimatedHours ? parseFloat(issue.estimatedHours.toString()) : 0;
+        if (estimatedHours > 0) {
+          const totalSpent = issue.timeEntries.reduce((sum: number, te: any) => sum + parseFloat(te.hours.toString()), 0);
+          if (totalSpent > estimatedHours * overrunThreshold) {
             tasksOverrun++;
           }
         }
@@ -151,7 +152,10 @@ export const getTeamCompliance = async (req: Request, res: Response) => {
     // Get issues without estimates
     let issuesWithoutEstimates = 0;
     for (const project of manager.managedProjects) {
-      issuesWithoutEstimates += project.issues.filter(i => !i.estimatedHours || i.estimatedHours === 0).length;
+      issuesWithoutEstimates += project.issues.filter(i => {
+        const estimated = i.estimatedHours ? parseFloat(i.estimatedHours.toString()) : 0;
+        return estimated === 0;
+      }).length;
     }
 
     // Format team members with last entry info
@@ -175,7 +179,10 @@ export const getTeamCompliance = async (req: Request, res: Response) => {
       managedProjects: manager.managedProjects.map(p => ({
         id: p.id,
         name: p.name,
-        issuesWithoutEstimates: p.issues.filter(i => !i.estimatedHours || i.estimatedHours === 0).length,
+        issuesWithoutEstimates: p.issues.filter(i => {
+          const estimated = i.estimatedHours ? parseFloat(i.estimatedHours.toString()) : 0;
+          return estimated === 0;
+        }).length,
         _count: {
           issues: p._count.issues
         }

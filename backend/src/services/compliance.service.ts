@@ -144,7 +144,7 @@ class ComplianceService {
     });
 
     // Check for bulk logging (3+ entries created at same time)
-    for (const [key, entries] of Object.entries(groupedByUserAndTime)) {
+    for (const [, entries] of Object.entries(groupedByUserAndTime)) {
       if (entries.length >= 3) {
         // Check if entries span multiple days
         const dates = new Set(entries.map(e => e.spentOn.toISOString().split('T')[0]));

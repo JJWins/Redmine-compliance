@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { sendSuccess, sendError } from '../utils/response.utils';
 
-export const getPatterns = async (req: Request, res: Response) => {
+export const getPatterns = async (_req: Request, res: Response) => {
   try {
     // TODO: Implement pattern detection results
     return sendSuccess(res, []);
@@ -10,7 +10,7 @@ export const getPatterns = async (req: Request, res: Response) => {
   }
 };
 
-export const getManagersComparison = async (req: Request, res: Response) => {
+export const getManagersComparison = async (_req: Request, res: Response) => {
   try {
     // TODO: Implement managers comparison
     return sendSuccess(res, []);

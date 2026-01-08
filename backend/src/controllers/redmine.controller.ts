@@ -63,7 +63,7 @@ export const triggerSync = async (req: Request, res: Response) => {
   }
 };
 
-export const getStatus = async (req: Request, res: Response) => {
+export const getStatus = async (_req: Request, res: Response) => {
   try {
     const connected = await redmineService.testConnection();
     const syncTimes = await syncStateService.getAllSyncTimes();

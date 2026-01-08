@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { config } from '../config/environment';
-import { logIncomingData, logBatchData } from '../utils/logger';
+import { logBatchData } from '../utils/logger';
 import logger from '../utils/logger';
 
 interface RedmineUser {
@@ -63,7 +63,7 @@ interface RedmineProjectMember {
   roles: Array<{ id: number; name: string; inherited?: boolean }>;
 }
 
-interface RedmineResponse<T> {
+interface RedmineResponse<_T = any> {
   [key: string]: any; // For dynamic keys like 'users', 'projects', 'issues', 'time_entries'
   total_count: number;
   offset: number;
